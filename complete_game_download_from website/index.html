@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waves of Reflection - Interactive Journey</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #050510;
+            color: white;
+        }
+        
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050510;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 900;
+        }
+        
+        .album-artwork {
+            width: 300px;
+            height: 300px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .start-button {
+            padding: 15px 40px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid #FFD700;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .start-button:hover {
+            background-color: #FFD700;
+            color: #050510;
+        }
+        
+        #ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        #message-display {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            max-width: 80%;
+            pointer-events: none;
+        }
+        
+        #star-counter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+        
+        #star-counter .star-icon {
+            color: #FFD700;
+            margin-right: 8px;
+            font-size: 1.4rem;
+        }
+        
+        #controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 3s ease;
+        }
+        
+        #controls-panel {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            z-index: 150;
+            pointer-events: none;
+            width: 180px;
+        }
+        
+        #controls-panel h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            text-align: center;
+            color: #FFD700;
+        }
+        
+        #controls-panel p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        #controls-panel .key {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: 0 2px;
+            font-family: monospace;
+        }
+        
+        #volume-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            z-index: 200;
+            pointer-events: all;
+            display: flex;
+            align-items: center;
+        }
+        
+        #volume-control .volume-icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        #volume-slider {
+            width: 80px;
+            margin: 0;
+        }
+        
+        #pause-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 5, 16, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 800;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        #pause-menu.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .menu-button {
+            padding: 12px 30px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid #FFD700;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            width: 200px;
+            text-align: center;
+        }
+        
+        .menu-button:hover {
+            background-color: #FFD700;
+            color: #050510;
+        }
+        
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            pointer-events: none;
+            z-index: 700;
+            transition: background-color 2s ease;
+        }
+        
+        #transmission-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            z-index: 900;
+            display: none;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+        }
+        
+        #transmission-modal img {
+            max-width: 100%;
+            max-height: 60vh;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        #transmission-modal .transmission-text {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        #transmission-modal .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <img src="assets/images/album-artwork.jpg" alt="Waves of Reflection" class="album-artwork">
+        <h1>Waves of Reflection</h1>
+        <p>An interactive journey through emotional cycles</p>
+        <button id="start-button" class="start-button">Begin Journey</button>
+    </div>
+    
+    <!-- Game Container -->
+    <div id="game-container">
+        <!-- Three.js will render here -->
+    </div>
+    
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+        <div id="message-display"></div>
+        <div id="star-counter">
+            <span class="star-icon">★</span>
+            <span id="stars-count">0/5</span>
+        </div>
+        <div id="controls-info">
+            <p>WASD or Arrow Keys to move | SPACE to fly up | ESC to pause</p>
+        </div>
+    </div>
+    
+    <!-- Controls Panel -->
+    <div id="controls-panel">
+        <h3>Controls</h3>
+        <p><span class="key">W</span> <span class="key">↑</span> Move forward</p>
+        <p><span class="key">S</span> <span class="key">↓</span> Move backward</p>
+        <p><span class="key">A</span> <span class="key">←</span> Move left</p>
+        <p><span class="key">D</span> <span class="key">→</span> Move right</p>
+        <p><span class="key">Space</span> Fly upward</p>
+        <p><span class="key">Esc</span> Pause game</p>
+    </div>
+    
+    <!-- Volume Control -->
+    <div id="volume-control">
+        <span class="volume-icon">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="80">
+    </div>
+    
+    <!-- Pause Menu -->
+    <div id="pause-menu">
+        <h2>Paused</h2>
+        <button id="resume-button" class="menu-button">Resume</button>
+        <button id="restart-button" class="menu-button">Restart Journey</button>
+        <button id="exit-button" class="menu-button">Exit to Menu</button>
+    </div>
+    
+    <!-- Transition Overlay -->
+    <div id="transition-overlay" class="transition-overlay"></div>
+    
+    <!-- Transmission Modal -->
+    <div id="transmission-modal">
+        <button class="close-button">&times;</button>
+        <img id="transmission-image" src="" alt="Transmission">
+        <div class="transmission-text" id="transmission-text"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
+    <script>
+        // Enhanced Game Class with Vertical Movement and Transmissions
+        class EnhancedGame {
+            constructor() {
+                this.initialized = false;
+                this.gameStarted = false;
+                this.isPaused = false;
+                
+                // DOM elements
+                this.startScreen = document.getElementById('start-screen');
+                this.gameContainer = document.getElementById('game-container');
+                this.pauseMenu = document.getElementById('pause-menu');
+                this.messageDisplay = document.getElementById('message-display');
+                this.starsCountElement = document.getElementById('stars-count');
+                this.controlsInfo = document.getElementById('controls-info');
+                this.transitionOverlay = document.getElementById('transition-overlay');
+                this.transmissionModal = document.getElementById('transmission-modal');
+                this.transmissionImage = document.getElementById('transmission-image');
+                this.transmissionText = document.getElementById('transmission-text');
+                
+                // Three.js components
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.clock = null;
+                
+                // Game state
+                this.emotionalStates = ['joy', 'nostalgia', 'sorrow', 'routine'];
+                this.currentStateIndex = 0;
+                this.currentState = this.emotionalStates[this.currentStateIndex];
+                this.stateColors = {
+                    joy: 0xFFD700, // Gold
+                    nostalgia: 0x4A90E2, // Blue
+                    sorrow: 0x2C3E50, // Dark Blue
+                    routine: 0x95A5A6 // Gray
+                };
+                this.stateAmbientColors = {
+                    joy: 0xFFF4D9, // Warm light
+                    nostalgia: 0xD4E6F1, // Soft blue
+                    sorrow: 0x1A2530, // Dark blue
+                    routine: 0xE5E8E8 // Light gray
+                };
+                
+                // Player
+                this.player = null;
+                this.playerSpeed = 0.08;
+                this.playerVerticalSpeed = 0.06;
+                this.playerDirection = new THREE.Vector3();
+                this.playerCanMove = true;
+                this.isFlying = false;
+                this.gravity = 0.0010;
+                this.verticalVelocity = 0;
+                this.playerGlowIntensity = 0.3;
+                
+                // Audio
+                this.audioContext = null;
+                this.audioSources = {};
+                this.audioGains = {};
+                this.masterGain = null;
+                this.currentTrack = null;
+                this.trackMapping = {
+                    joy: 'assets/audio/9 - Saturday.mp3',
+                    nostalgia: 'assets/audio/5 - waves.mp3',
+                    sorrow: 'assets/audio/4 - new moon.mp3',
+                    routine: 'assets/audio/13 - windows.mp3'
+                };
+                
+                // Game objects
+                this.centerpieces = {};
+                this.skybox = null;
+                this.particleSystems = {};
+                this.stars = [];
+                this.starsCollected = 0;
+                this.totalStars = 5;
+                this.transmissions = [];
+                
+                // Transmission data
+                this.transmissionPaths = {
+                    joy: [
+                        'assets/images/transmissions-unique/1.jpg',
+                        'assets/images/transmissions-unique/2.jpg'
+                    ],
+                    nostalgia: [
+                        'assets/images/transmissions-unique/3.jpg',
+                        'assets/images/transmissions-unique/4.jpg'
+                    ],
+                    sorrow: [
+                        'assets/images/transmissions-unique/5.jpg'
+                    ],
+                    routine: [
+                        'assets/images/transmissions-unique/6.jpg'
+                    ]
+                };
+                
+                this.transmissionMessages = {
+                    joy: [
+                        "Transmission received: The frequency resonates with pure joy. These patterns suggest the beginning of a cycle.",
+                        "Signal analysis complete: This transmission contains harmonics associated with creation and light."
+                    ],
+                    nostalgia: [
+                        "Memory echo detected: These waveforms match patterns of nostalgia and reflection.",
+                        "Temporal analysis: This signal appears to be echoing from a previous cycle, creating a sense of familiarity."
+                    ],
+                    sorrow: [
+                        "Deep frequency detected: This transmission carries the weight of emotional depth and introspection."
+                    ],
+                    routine: [
+                        "Pattern recognition complete: This transmission shows the structured rhythms of routine and order."
+                    ]
+                };
+                
+                // Lighting
+                this.ambientLight = null;
+                this.directionalLight = null;
+                this.playerLight = null;
+                
+                // Bind methods
+                this.update = this.update.bind(this);
+                this.onResize = this.onResize.bind(this);
+                this.onKeyDown = this.onKeyDown.bind(this);
+                this.onKeyUp = this.onKeyUp.bind(this);
+                
+                // Input state
+                this.keys = {
+                    forward: false,
+                    backward: false,
+                    left: false,
+                    right: false,
+                    space: false
+                };
+                
+                // Initialize
+                this.init();
+            }
+            
+            init() {
+                console.log('Initializing game...');
+                
+                // Add event listeners
+                window.addEventListener('resize', this.onResize);
+                window.addEventListener('keydown', this.onKeyDown);
+                window.addEventListener('keyup', this.onKeyUp);
+                
+                // Add button event listeners
+                document.getElementById('start-button').addEventListener('click', () => this.startGame());
+                document.getElementById('resume-button').addEventListener('click', () => this.resumeGame());
+                document.getElementById('restart-button').addEventListener('click', () => this.restartGame());
+                document.getElementById('exit-button').addEventListener('click', () => this.exitToMenu());
+                
+                // Add transmission modal close button listener
+                document.querySelector('#transmission-modal .close-button').addEventListener('click', () => {
+                    this.transmissionModal.style.display = 'none';
+                    this.playerCanMove = true;
+                });
+                
+                // Add volume control listener
+                document.getElementById('volume-slider').addEventListener('input', (e) => {
+                    this.setVolume(e.target.value / 100);
+                });
+                
+                this.initialized = true;
+            }
+            
+            startGame() {
+                if (this.gameStarted) return;
+                
+                console.log('Starting game...');
+                
+                // Hide start screen
+                this.startScreen.style.display = 'none';
+                
+                // Initialize Three.js
+                this.initThree();
+                
+                // Initialize audio
+                this.initAudio();
+                
+                // Create game world
+                this.createGameWorld();
+                
+                // Start the game
+                this.gameStarted = true;
+                this.update();
+                
+                // Display welcome message
+                this.displayMessage('Use SPACE to fly upward and collect stars. Collect 5 stars to progress.');
+                
+                // Hide controls info after delay
+                setTimeout(() => {
+                    this.controlsInfo.style.opacity = 0;
+                }, 10000);
+            }
+            
+            initThree() {
+                // Create scene
+                this.scene = new THREE.Scene();
+                this.scene.fog = new THREE.FogExp2(0x000000, 0.01);
+                
+                // Create camera
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.set(0, 2, 5);
+                
+                // Create renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.setClearColor(0x000000);
+                this.gameContainer.appendChild(this.renderer.domElement);
+                
+                // Create clock
+                this.clock = new THREE.Clock();
+                
+                // Add lighting
+                this.ambientLight = new THREE.AmbientLight(this.stateAmbientColors[this.currentState], 0.5);
+                this.scene.add(this.ambientLight);
+                
+                this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                this.directionalLight.position.set(0, 10, 10);
+                this.scene.add(this.directionalLight);
+            }
+            
+            initAudio() {
+                try {
+                    // Create audio context
+                    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+                    
+                    // Create master gain
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.gain.value = 0.8;
+                    this.masterGain.connect(this.audioContext.destination);
+                    
+                    // Load initial track
+                    this.loadTrack(this.trackMapping[this.currentState]);
+                } catch (error) {
+                    console.error('Failed to initialize audio:', error);
+                }
+            }
+            
+            loadTrack(url) {
+                fetch(url)
+                    .then(response => response.arrayBuffer())
+                    .then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
+                    .then(audioBuffer => {
+                        console.log(`Loaded audio: ${url}`);
+                        this.playTrack(url, audioBuffer);
+                    })
+                    .catch(error => {
+                        console.error(`Failed to load audio ${url}:`, error);
+                    });
+            }
+            
+            playTrack(url, audioBuffer) {
+                // Stop current track if playing
+                if (this.currentTrack && this.audioSources[this.currentTrack]) {
+                    this.audioSources[this.currentTrack].stop();
+                    delete this.audioSources[this.currentTrack];
+                    delete this.audioGains[this.currentTrack];
+                }
+                
+                // Create source node
+                const source = this.audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.loop = true;
+                
+                // Create gain node
+                const gain = this.audioContext.createGain();
+                gain.gain.value = 0.7;
+                
+                // Connect nodes
+                source.connect(gain);
+                gain.connect(this.masterGain);
+                
+                // Store references
+                this.audioSources[url] = source;
+                this.audioGains[url] = gain;
+                
+                // Start playback
+                source.start(0);
+                
+                // Update current track
+                this.currentTrack = url;
+            }
+            
+            setVolume(volume) {
+                if (this.masterGain) {
+                    this.masterGain.gain.value = volume;
+                }
+            }
+            
+            createGameWorld() {
+                // Create player
+                this.createPlayer();
+                
+                // Create centerpieces for each state
+                this.createCenterpieces();
+                
+                // Create skybox
+                this.createSkybox();
+                
+                // Create particle systems
+                this.createParticleSystems();
+                
+                // Create stars
+                this.createStars();
+                
+                // Create transmissions
+                this.createTransmissions();
+                
+                // Set initial state
+                this.setEmotionalState(this.currentState, true);
+            }
+            
+            createPlayer() {
+                // Create player mesh
+                const geometry = new THREE.SphereGeometry(0.5, 16, 16);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: this.stateColors[this.currentState],
+                    emissiveIntensity: this.playerGlowIntensity,
+                    wireframe: true
+                });
+                
+                this.player = new THREE.Mesh(geometry, material);
+                this.player.position.set(0, 1, 0);
+                this.scene.add(this.player);
+                
+                // Add point light to player
+                this.playerLight = new THREE.PointLight(this.stateColors[this.currentState], 0.7, 5);
+                this.playerLight.position.set(0, 0.5, 0);
+                this.player.add(this.playerLight);
+                
+                // Position camera
+                this.camera.position.set(0, 3, 5);
+                this.camera.lookAt(this.player.position);
+            }
+            
+            createCenterpieces() {
+                // Joy centerpiece - Ascending light beams
+                const joyCenterpiece = new THREE.Group();
+                
+                // Create central prism
+                const prismGeometry = new THREE.ConeGeometry(2, 4, 3);
+                const prismMaterial = new THREE.MeshStandardMaterial({
+                    color: this.stateColors.joy,
+                    emissive: this.stateColors.joy,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.7,
+                    wireframe: true
+                });
+                
+                const prism = new THREE.Mesh(prismGeometry, prismMaterial);
+                prism.position.y = 2;
+                joyCenterpiece.add(prism);
+                
+                // Add light beams
+                for (let i = 0; i < 5; i++) {
+                    const beamGeometry = new THREE.CylinderGeometry(0.1, 0.1, 10, 8);
+                    const beamMaterial = new THREE.MeshStandardMaterial({
+                        color: this.stateColors.joy,
+                        emissive: this.stateColors.joy,
+                        emissiveIntensity: 0.8,
+                        transparent: true,
+                        opacity: 0.3
+                    });
+                    
+                    const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+                    beam.position.set(
+                        Math.sin(i * Math.PI * 2 / 5) * 3,
+                        5,
+                        Math.cos(i * Math.PI * 2 / 5) * 3
+                    );
+                    beam.rotation.x = Math.PI / 2;
+                    joyCenterpiece.add(beam);
+                }
+                
+                joyCenterpiece.position.set(0, 0, -30);
+                this.scene.add(joyCenterpiece);
+                this.centerpieces.joy = joyCenterpiece;
+                
+                // Nostalgia centerpiece - Retrofuturistic terminal
+                const nostalgiaCenterpiece = new THREE.Group();
+                
+                // Create terminal
+                const terminalGeometry = new THREE.BoxGeometry(4, 3, 0.5);
+                const terminalMaterial = new THREE.MeshStandardMaterial({
+                    color: this.stateColors.nostalgia,
+                    emissive: this.stateColors.nostalgia,
+                    emissiveIntensity: 0.3,
+                    wireframe: true
+                });
+                const terminal = new THREE.Mesh(terminalGeometry, terminalMaterial);
+                terminal.position.y = 2;
+                nostalgiaCenterpiece.add(terminal);
+                
+                // Create orbits
+                for (let i = 0; i < 3; i++) {
+                    const orbitGeometry = new THREE.TorusGeometry(3 + i, 0.05, 16, 50);
+                    const orbitMaterial = new THREE.MeshStandardMaterial({
+                        color: this.stateColors.nostalgia,
+                        emissive: this.stateColors.nostalgia,
+                        emissiveIntensity: 0.5,
+                        transparent: true,
+                        opacity: 0.7
+                    });
+                    
+                    const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+                    orbit.rotation.x = Math.PI / 2;
+                    orbit.rotation.z = i * Math.PI / 4;
+                    nostalgiaCenterpiece.add(orbit);
+                    
+                    // Add orbital objects
+                    const objectGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+                    const objectMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        emissive: this.stateColors.nostalgia,
+                        emissiveIntensity: 0.8
+                    });
+                    
+                    const orbitalObject = new THREE.Mesh(objectGeometry, objectMaterial);
+                    orbitalObject.position.x = 3 + i;
+                    orbit.add(orbitalObject);
+                }
+                
+                nostalgiaCenterpiece.position.set(0, 0, -30);
+                nostalgiaCenterpiece.visible = false;
+                this.scene.add(nostalgiaCenterpiece);
+                this.centerpieces.nostalgia = nostalgiaCenterpiece;
+                
+                // Sorrow centerpiece - Fragmented void
+                const sorrowCenterpiece = new THREE.Group();
+                
+                // Create central void
+                const voidGeometry = new THREE.SphereGeometry(2, 32, 32);
+                const voidMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x000000,
+                    emissive: 0x000000,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const voidSphere = new THREE.Mesh(voidGeometry, voidMaterial);
+                voidSphere.position.y = 2;
+                sorrowCenterpiece.add(voidSphere);
+                
+                // Create fragments
+                for (let i = 0; i < 20; i++) {
+                    const fragmentGeometry = new THREE.TetrahedronGeometry(0.5, 0);
+                    const fragmentMaterial = new THREE.MeshStandardMaterial({
+                        color: this.stateColors.sorrow,
+                        emissive: this.stateColors.sorrow,
+                        emissiveIntensity: 0.3,
+                        wireframe: true
+                    });
+                    
+                    const fragment = new THREE.Mesh(fragmentGeometry, fragmentMaterial);
+                    
+                    // Position in sphere
+                    const phi = Math.acos(-1 + (2 * i) / 20);
+                    const theta = Math.sqrt(20 * Math.PI) * phi;
+                    
+                    fragment.position.set(
+                        4 * Math.sin(phi) * Math.cos(theta),
+                        2 + 4 * Math.sin(phi) * Math.sin(theta),
+                        4 * Math.cos(phi)
+                    );
+                    
+                    sorrowCenterpiece.add(fragment);
+                }
+                
+                sorrowCenterpiece.position.set(0, 0, -30);
+                sorrowCenterpiece.visible = false;
+                this.scene.add(sorrowCenterpiece);
+                this.centerpieces.sorrow = sorrowCenterpiece;
+                
+                // Routine centerpiece - Geometric grid
+                const routineCenterpiece = new THREE.Group();
+                
+                // Create central structure
+                const gridSize = 5;
+                const gridGeometry = new THREE.BoxGeometry(gridSize * 2, 0.1, gridSize * 2);
+                const gridMaterial = new THREE.MeshStandardMaterial({
+                    color: this.stateColors.routine,
+                    emissive: this.stateColors.routine,
+                    emissiveIntensity: 0.2,
+                    wireframe: true
+                });
+                
+                const grid = new THREE.Mesh(gridGeometry, gridMaterial);
+                grid.position.y = 2;
+                routineCenterpiece.add(grid);
+                
+                // Add grid elements
+                for (let x = -gridSize / 2; x <= gridSize / 2; x++) {
+                    for (let z = -gridSize / 2; z <= gridSize / 2; z++) {
+                        if (Math.random() < 0.3) {
+                            const height = 0.5 + Math.random() * 2;
+                            const boxGeometry = new THREE.BoxGeometry(0.4, height, 0.4);
+                            const boxMaterial = new THREE.MeshStandardMaterial({
+                                color: this.stateColors.routine,
+                                emissive: this.stateColors.routine,
+                                emissiveIntensity: 0.3,
+                                transparent: true,
+                                opacity: 0.8
+                            });
+                            
+                            const box = new THREE.Mesh(boxGeometry, boxMaterial);
+                            box.position.set(x * 2, 2 + height / 2, z * 2);
+                            routineCenterpiece.add(box);
+                        }
+                    }
+                }
+                
+                routineCenterpiece.position.set(0, 0, -30);
+                routineCenterpiece.visible = false;
+                this.scene.add(routineCenterpiece);
+                this.centerpieces.routine = routineCenterpiece;
+            }
+            
+            createSkybox() {
+                const geometry = new THREE.SphereGeometry(100, 32, 32);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    side: THREE.BackSide,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                this.skybox = new THREE.Mesh(geometry, material);
+                this.scene.add(this.skybox);
+            }
+            
+            createParticleSystems() {
+                // Joy particles - Upward-floating golden particles
+                const joyParticles = new THREE.Group();
+                
+                // Create particle system
+                const joyParticleCount = 1500;
+                const joyParticleGeometry = new THREE.BufferGeometry();
+                const joyParticlePositions = new Float32Array(joyParticleCount * 3);
+                const joyParticleSizes = new Float32Array(joyParticleCount);
+                
+                for (let i = 0; i < joyParticleCount; i++) {
+                    const i3 = i * 3;
+                    
+                    // Random position in a cylinder
+                    const radius = Math.sqrt(Math.random()) * 50;
+                    const theta = Math.random() * Math.PI * 2;
+                    
+                    joyParticlePositions[i3] = radius * Math.cos(theta);
+                    joyParticlePositions[i3 + 1] = Math.random() * 100 - 50;
+                    joyParticlePositions[i3 + 2] = radius * Math.sin(theta);
+                    
+                    // Random size
+                    joyParticleSizes[i] = Math.random() * 2 + 0.5;
+                }
+                
+                joyParticleGeometry.setAttribute('position', new THREE.BufferAttribute(joyParticlePositions, 3));
+                joyParticleGeometry.setAttribute('size', new THREE.BufferAttribute(joyParticleSizes, 1));
+                
+                // Create shader material
+                const joyParticleMaterial = new THREE.PointsMaterial({
+                    color: this.stateColors.joy,
+                    size: 0.2,
+                    transparent: true,
+                    opacity: 0.7,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const joyParticleSystem = new THREE.Points(joyParticleGeometry, joyParticleMaterial);
+                joyParticles.add(joyParticleSystem);
+                
+                joyParticles.userData = {
+                    positions: joyParticlePositions,
+                    sizes: joyParticleSizes,
+                    system: joyParticleSystem
+                };
+                
+                this.scene.add(joyParticles);
+                this.particleSystems.joy = joyParticles;
+                
+                // Nostalgia particles - Slow-moving blue particles with horizontal drift
+                const nostalgiaParticles = new THREE.Group();
+                
+                // Create particle system
+                const nostalgiaParticleCount = 1200;
+                const nostalgiaParticleGeometry = new THREE.BufferGeometry();
+                const nostalgiaParticlePositions = new Float32Array(nostalgiaParticleCount * 3);
+                const nostalgiaParticleSizes = new Float32Array(nostalgiaParticleCount);
+                
+                for (let i = 0; i < nostalgiaParticleCount; i++) {
+                    const i3 = i * 3;
+                    
+                    // Random position in a sphere
+                    const radius = 30 + Math.random() * 20;
+                    const phi = Math.acos(-1 + Math.random() * 2);
+                    const theta = Math.random() * Math.PI * 2;
+                    
+                    nostalgiaParticlePositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                    nostalgiaParticlePositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                    nostalgiaParticlePositions[i3 + 2] = radius * Math.cos(phi);
+                    
+                    // Random size
+                    nostalgiaParticleSizes[i] = Math.random() * 1.5 + 0.5;
+                }
+                
+                nostalgiaParticleGeometry.setAttribute('position', new THREE.BufferAttribute(nostalgiaParticlePositions, 3));
+                nostalgiaParticleGeometry.setAttribute('size', new THREE.BufferAttribute(nostalgiaParticleSizes, 1));
+                
+                // Create shader material
+                const nostalgiaParticleMaterial = new THREE.PointsMaterial({
+                    color: this.stateColors.nostalgia,
+                    size: 0.2,
+                    transparent: true,
+                    opacity: 0.7,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const nostalgiaParticleSystem = new THREE.Points(nostalgiaParticleGeometry, nostalgiaParticleMaterial);
+                nostalgiaParticles.add(nostalgiaParticleSystem);
+                
+                nostalgiaParticles.userData = {
+                    positions: nostalgiaParticlePositions,
+                    sizes: nostalgiaParticleSizes,
+                    system: nostalgiaParticleSystem
+                };
+                
+                nostalgiaParticles.visible = false;
+                this.scene.add(nostalgiaParticles);
+                this.particleSystems.nostalgia = nostalgiaParticles;
+                
+                // Sorrow particles - Downward-drifting deep blue particles
+                const sorrowParticles = new THREE.Group();
+                
+                // Create particle system
+                const sorrowParticleCount = 1000;
+                const sorrowParticleGeometry = new THREE.BufferGeometry();
+                const sorrowParticlePositions = new Float32Array(sorrowParticleCount * 3);
+                const sorrowParticleSizes = new Float32Array(sorrowParticleCount);
+                
+                for (let i = 0; i < sorrowParticleCount; i++) {
+                    const i3 = i * 3;
+                    
+                    // Random position in a cylinder
+                    const radius = Math.sqrt(Math.random()) * 50;
+                    const theta = Math.random() * Math.PI * 2;
+                    
+                    sorrowParticlePositions[i3] = radius * Math.cos(theta);
+                    sorrowParticlePositions[i3 + 1] = Math.random() * 100 - 50;
+                    sorrowParticlePositions[i3 + 2] = radius * Math.sin(theta);
+                    
+                    // Random size
+                    sorrowParticleSizes[i] = Math.random() * 1.2 + 0.3;
+                }
+                
+                sorrowParticleGeometry.setAttribute('position', new THREE.BufferAttribute(sorrowParticlePositions, 3));
+                sorrowParticleGeometry.setAttribute('size', new THREE.BufferAttribute(sorrowParticleSizes, 1));
+                
+                // Create shader material
+                const sorrowParticleMaterial = new THREE.PointsMaterial({
+                    color: this.stateColors.sorrow,
+                    size: 0.2,
+                    transparent: true,
+                    opacity: 0.5,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const sorrowParticleSystem = new THREE.Points(sorrowParticleGeometry, sorrowParticleMaterial);
+                sorrowParticles.add(sorrowParticleSystem);
+                
+                sorrowParticles.userData = {
+                    positions: sorrowParticlePositions,
+                    sizes: sorrowParticleSizes,
+                    system: sorrowParticleSystem
+                };
+                
+                sorrowParticles.visible = false;
+                this.scene.add(sorrowParticles);
+                this.particleSystems.sorrow = sorrowParticles;
+                
+                // Routine particles - Orbiting gray particles following geometric paths
+                const routineParticles = new THREE.Group();
+                
+                // Create particle system
+                const routineParticleCount = 1100;
+                const routineParticleGeometry = new THREE.BufferGeometry();
+                const routineParticlePositions = new Float32Array(routineParticleCount * 3);
+                const routineParticleSizes = new Float32Array(routineParticleCount);
+                
+                for (let i = 0; i < routineParticleCount; i++) {
+                    const i3 = i * 3;
+                    
+                    // Position in geometric patterns
+                    const patternType = Math.floor(Math.random() * 3);
+                    
+                    if (patternType === 0) {
+                        // Grid pattern
+                        const gridSize = 40;
+                        const cellSize = 5;
+                        
+                        const x = Math.floor(Math.random() * gridSize) - gridSize / 2;
+                        const z = Math.floor(Math.random() * gridSize) - gridSize / 2;
+                        const y = Math.random() * 40 - 20;
+                        
+                        routineParticlePositions[i3] = x * cellSize;
+                        routineParticlePositions[i3 + 1] = y;
+                        routineParticlePositions[i3 + 2] = z * cellSize;
+                    } else if (patternType === 1) {
+                        // Circular pattern
+                        const radius = 20 + Math.random() * 30;
+                        const angle = Math.random() * Math.PI * 2;
+                        const y = Math.random() * 40 - 20;
+                        
+                        routineParticlePositions[i3] = Math.cos(angle) * radius;
+                        routineParticlePositions[i3 + 1] = y;
+                        routineParticlePositions[i3 + 2] = Math.sin(angle) * radius;
+                    } else {
+                        // Spiral pattern
+                        const turns = 5;
+                        const radius = Math.random() * 50;
+                        const angle = Math.random() * Math.PI * 2 * turns;
+                        const y = Math.random() * 40 - 20;
+                        
+                        routineParticlePositions[i3] = Math.cos(angle) * (radius / turns) * angle / (Math.PI * 2);
+                        routineParticlePositions[i3 + 1] = y;
+                        routineParticlePositions[i3 + 2] = Math.sin(angle) * (radius / turns) * angle / (Math.PI * 2);
+                    }
+                    
+                    // Random size
+                    routineParticleSizes[i] = Math.random() * 1.5 + 0.3;
+                }
+                
+                routineParticleGeometry.setAttribute('position', new THREE.BufferAttribute(routineParticlePositions, 3));
+                routineParticleGeometry.setAttribute('size', new THREE.BufferAttribute(routineParticleSizes, 1));
+                
+                // Create shader material
+                const routineParticleMaterial = new THREE.PointsMaterial({
+                    color: this.stateColors.routine,
+                    size: 0.2,
+                    transparent: true,
+                    opacity: 0.6,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const routineParticleSystem = new THREE.Points(routineParticleGeometry, routineParticleMaterial);
+                routineParticles.add(routineParticleSystem);
+                
+                routineParticles.userData = {
+                    positions: routineParticlePositions,
+                    sizes: routineParticleSizes,
+                    system: routineParticleSystem
+                };
+                
+                routineParticles.visible = false;
+                this.scene.add(routineParticles);
+                this.particleSystems.routine = routineParticles;
+            }
+            
+            createStars() {
+                // Clear existing stars
+                this.stars.forEach(star => {
+                    this.scene.remove(star);
+                });
+                this.stars = [];
+                
+                // Create new stars
+                for (let i = 0; i < this.totalStars; i++) {
+                    const starGeometry = new THREE.OctahedronGeometry(0.5, 0);
+                    const starMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        emissive: this.stateColors[this.currentState],
+                        emissiveIntensity: 1,
+                        metalness: 0.3,
+                        roughness: 0.4
+                    });
+                    
+                    const star = new THREE.Mesh(starGeometry, starMaterial);
+                    
+                    // Position star randomly but within player's reach
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 10 + Math.random() * 15;
+                    const height = 3 + Math.random() * 10; // Higher positions
+                    
+                    star.position.set(
+                        Math.cos(angle) * radius,
+                        height,
+                        Math.sin(angle) * radius
+                    );
+                    
+                    star.userData = {
+                        id: i,
+                        collected: false,
+                        originalY: height,
+                        pulsePhase: Math.random() * Math.PI * 2
+                    };
+                    
+                    this.stars.push(star);
+                    this.scene.add(star);
+                }
+                
+                // Update star counter
+                this.starsCollected = 0;
+                this.updateStarCounter();
+            }
+            
+            createTransmissions() {
+                // Clear existing transmissions
+                this.transmissions.forEach(transmission => {
+                    this.scene.remove(transmission);
+                });
+                this.transmissions = [];
+                
+                // Get transmission paths for current state
+                const paths = this.transmissionPaths[this.currentState];
+                if (!paths || paths.length === 0) return;
+                
+                // Create new transmissions
+                for (let i = 0; i < paths.length; i++) {
+                    // Create a floating frame for the transmission
+                    const frameGeometry = new THREE.BoxGeometry(1.5, 1.5, 0.1);
+                    const frameMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        emissive: this.stateColors[this.currentState],
+                        emissiveIntensity: 0.8,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    
+                    const transmission = new THREE.Mesh(frameGeometry, frameMaterial);
+                    
+                    // Position transmission randomly
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 15 + Math.random() * 10;
+                    const height = 2 + Math.random() * 8;
+                    
+                    transmission.position.set(
+                        Math.cos(angle) * radius,
+                        height,
+                        Math.sin(angle) * radius
+                    );
+                    
+                    // Rotate to face center
+                    transmission.lookAt(0, height, 0);
+                    
+                    transmission.userData = {
+                        id: i,
+                        collected: false,
+                        originalY: height,
+                        pulsePhase: Math.random() * Math.PI * 2,
+                        imagePath: paths[i],
+                        message: this.transmissionMessages[this.currentState][i] || "Transmission received."
+                    };
+                    
+                    this.transmissions.push(transmission);
+                    this.scene.add(transmission);
+                }
+            }
+            
+            setEmotionalState(state, immediate = false) {
+                if (state === this.currentState && !immediate) return;
+                
+                console.log(`Setting emotional state: ${state}`);
+                
+                if (!immediate) {
+                    // Transition effect
+                    this.transitionToState(state);
+                    return;
+                }
+                
+                // Update current state
+                this.currentState = state;
+                
+                // Show appropriate centerpiece
+                Object.keys(this.centerpieces).forEach(key => {
+                    this.centerpieces[key].visible = key === state;
+                });
+                
+                // Show appropriate particle system
+                Object.keys(this.particleSystems).forEach(key => {
+                    this.particleSystems[key].visible = key === state;
+                });
+                
+                // Update skybox color
+                this.skybox.material.color.set(new THREE.Color(this.stateColors[state]).multiplyScalar(0.1));
+                
+                // Update ambient light
+                this.ambientLight.color.set(this.stateAmbientColors[state]);
+                
+                // Update stars
+                this.stars.forEach(star => {
+                    star.material.emissive.set(this.stateColors[state]);
+                });
+                
+                // Update player glow
+                this.player.material.emissive.set(this.stateColors[state]);
+                this.playerLight.color.set(this.stateColors[state]);
+                
+                // Create new transmissions for this state
+                this.createTransmissions();
+                
+                // Load appropriate track
+                this.loadTrack(this.trackMapping[state]);
+            }
+            
+            transitionToState(newState) {
+                // Disable player movement during transition
+                this.playerCanMove = false;
+                
+                // Fade to black
+                this.transitionOverlay.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+                
+                // Wait for fade to complete
+                setTimeout(() => {
+                    // Set new state
+                    this.setEmotionalState(newState, true);
+                    
+                    // Reset player position
+                    this.player.position.set(0, 1, 0);
+                    
+                    // Create new stars
+                    this.createStars();
+                    
+                    // Fade back in
+                    this.transitionOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+                    
+                    // Display message
+                    this.displayMessage(`Entering new emotional state. Collect 5 stars to continue the journey.`);
+                    
+                    // Re-enable player movement after fade completes
+                    setTimeout(() => {
+                        this.playerCanMove = true;
+                    }, 1000);
+                }, 1000);
+            }
+            
+            update() {
+                if (!this.gameStarted || this.isPaused) return;
+                
+                // Get delta time
+                const deltaTime = this.clock.getDelta();
+                
+                // Update player movement
+                this.updatePlayerMovement(deltaTime);
+                
+                // Update camera
+                this.updateCamera();
+                
+                // Update centerpieces
+                this.updateCenterpieces(deltaTime);
+                
+                // Update particle systems
+                this.updateParticleSystems(deltaTime);
+                
+                // Update stars
+                this.updateStars(deltaTime);
+                
+                // Update transmissions
+                this.updateTransmissions(deltaTime);
+                
+                // Check for star collection
+                this.checkStarCollection();
+                
+                // Check for transmission collection
+                this.checkTransmissionCollection();
+                
+                // Render
+                this.renderer.render(this.scene, this.camera);
+                
+                // Continue loop
+                requestAnimationFrame(this.update);
+            }
+            
+            updatePlayerMovement(deltaTime) {
+                if (!this.playerCanMove) return;
+                
+                // Reset horizontal movement vector
+                this.playerDirection.set(0, 0, 0);
+                
+                // Get camera direction
+                const cameraDirection = new THREE.Vector3();
+                this.camera.getWorldDirection(cameraDirection);
+                cameraDirection.y = 0;
+                cameraDirection.normalize();
+                
+                // Get camera right vector
+                const cameraRight = new THREE.Vector3(1, 0, 0);
+                cameraRight.applyQuaternion(this.camera.quaternion);
+                cameraRight.y = 0;
+                cameraRight.normalize();
+                
+                // Apply horizontal movement based on keys
+                if (this.keys.forward) {
+                    this.playerDirection.add(cameraDirection);
+                }
+                if (this.keys.backward) {
+                    this.playerDirection.sub(cameraDirection);
+                }
+                if (this.keys.left) {
+                    this.playerDirection.sub(cameraRight);
+                }
+                if (this.keys.right) {
+                    this.playerDirection.add(cameraRight);
+                }
+                
+                // Normalize and apply horizontal movement
+                if (this.playerDirection.length() > 0) {
+                    this.playerDirection.normalize();
+                    this.player.position.addScaledVector(this.playerDirection, this.playerSpeed * 60 * deltaTime);
+                    
+                    // Rotate player to face movement direction
+                    if (this.playerDirection.length() > 0) {
+                        const targetRotation = Math.atan2(this.playerDirection.x, this.playerDirection.z);
+                        this.player.rotation.y = targetRotation;
+                    }
+                }
+                
+                // Apply vertical movement
+                if (this.keys.space) {
+                    // Apply upward force
+                    this.verticalVelocity = this.playerVerticalSpeed;
+                    this.isFlying = true;
+                } else {
+                    // Apply gravity
+                    this.verticalVelocity -= this.gravity;
+                }
+                
+                // Apply vertical velocity
+                this.player.position.y += this.verticalVelocity;
+                
+                // Prevent going below ground
+                if (this.player.position.y < 1) {
+                    this.player.position.y = 1;
+                    this.verticalVelocity = 0;
+                    this.isFlying = false;
+                }
+                
+                // Prevent going too high
+                if (this.player.position.y > 20) {
+                    this.player.position.y = 20;
+                    this.verticalVelocity = 0;
+                }
+                
+                // Keep player within horizontal bounds
+                const bounds = 40;
+                this.player.position.x = Math.max(-bounds, Math.min(bounds, this.player.position.x));
+                this.player.position.z = Math.max(-bounds, Math.min(bounds, this.player.position.z));
+                
+                // Check if player has reached centerpiece
+                if (this.starsCollected >= this.totalStars) {
+                    const centerpiece = this.centerpieces[this.currentState];
+                    const distance = this.player.position.distanceTo(centerpiece.position);
+                    
+                    if (distance < 10) {
+                        // Move to next state
+                        const currentIndex = this.emotionalStates.indexOf(this.currentState);
+                        const nextIndex = (currentIndex + 1) % this.emotionalStates.length;
+                        const nextState = this.emotionalStates[nextIndex];
+                        
+                        this.setEmotionalState(nextState);
+                    }
+                }
+            }
+            
+            updateCamera() {
+                // Position camera behind player
+                const cameraOffset = new THREE.Vector3(0, 3, 5);
+                const targetPosition = new THREE.Vector3().copy(this.player.position).add(cameraOffset);
+                
+                // Smoothly move camera
+                this.camera.position.lerp(targetPosition, 0.1);
+                
+                // Look at player
+                this.camera.lookAt(this.player.position);
+            }
+            
+            updateCenterpieces(deltaTime) {
+                // Joy centerpiece
+                if (this.centerpieces.joy.visible) {
+                    this.centerpieces.joy.rotation.y += deltaTime * 0.2;
+                    
+                    // Pulse prism
+                    const prism = this.centerpieces.joy.children[0];
+                    prism.scale.y = 1 + 0.1 * Math.sin(Date.now() * 0.001);
+                    
+                    // Animate light beams
+                    for (let i = 1; i < this.centerpieces.joy.children.length; i++) {
+                        const beam = this.centerpieces.joy.children[i];
+                        beam.position.y = 5 + Math.sin(Date.now() * 0.001 + i) * 2;
+                        beam.material.opacity = 0.3 + 0.2 * Math.sin(Date.now() * 0.002 + i);
+                    }
+                }
+                
+                // Nostalgia centerpiece
+                if (this.centerpieces.nostalgia.visible) {
+                    // Rotate orbits
+                    for (let i = 1; i < this.centerpieces.nostalgia.children.length; i++) {
+                        if (this.centerpieces.nostalgia.children[i].geometry.type === 'TorusGeometry') {
+                            this.centerpieces.nostalgia.children[i].rotation.z += deltaTime * (0.1 + i * 0.05);
+                        }
+                    }
+                    
+                    // Pulse terminal
+                    const terminal = this.centerpieces.nostalgia.children[0];
+                    terminal.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(Date.now() * 0.001);
+                }
+                
+                // Sorrow centerpiece
+                if (this.centerpieces.sorrow.visible) {
+                    this.centerpieces.sorrow.rotation.y += deltaTime * 0.1;
+                    
+                    // Pulse void
+                    const voidSphere = this.centerpieces.sorrow.children[0];
+                    const scale = 1 + 0.2 * Math.sin(Date.now() * 0.0005);
+                    voidSphere.scale.set(scale, scale, scale);
+                    
+                    // Animate fragments
+                    for (let i = 1; i < this.centerpieces.sorrow.children.length; i++) {
+                        const fragment = this.centerpieces.sorrow.children[i];
+                        const originalPos = fragment.position.clone();
+                        const distance = originalPos.length();
+                        
+                        // Pulse in and out
+                        const pulseScale = 1 + 0.2 * Math.sin(Date.now() * 0.001 + i * 0.1);
+                        fragment.position.copy(originalPos).multiplyScalar(pulseScale);
+                        
+                        // Rotate fragment
+                        fragment.rotation.x += deltaTime * 0.5;
+                        fragment.rotation.y += deltaTime * 0.3;
+                    }
+                }
+                
+                // Routine centerpiece
+                if (this.centerpieces.routine.visible) {
+                    // Rotate grid
+                    this.centerpieces.routine.rotation.y += deltaTime * 0.05;
+                    
+                    // Animate grid elements
+                    for (let i = 1; i < this.centerpieces.routine.children.length; i++) {
+                        const element = this.centerpieces.routine.children[i];
+                        if (element.geometry.type === 'BoxGeometry') {
+                            const originalY = element.position.y;
+                            element.position.y = originalY + Math.sin(Date.now() * 0.001 + i * 0.1) * 0.5;
+                        }
+                    }
+                }
+            }
+            
+            updateParticleSystems(deltaTime) {
+                // Joy particles - Upward floating
+                if (this.particleSystems.joy.visible) {
+                    const positions = this.particleSystems.joy.userData.positions;
+                    const count = positions.length / 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const i3 = i * 3;
+                        
+                        // Move upward
+                        positions[i3 + 1] += deltaTime * (0.5 + Math.random() * 1);
+                        
+                        // Reset if out of bounds
+                        if (positions[i3 + 1] > 50) {
+                            positions[i3 + 1] = -50;
+                            
+                            // Randomize x and z
+                            const radius = Math.sqrt(Math.random()) * 50;
+                            const theta = Math.random() * Math.PI * 2;
+                            
+                            positions[i3] = radius * Math.cos(theta);
+                            positions[i3 + 2] = radius * Math.sin(theta);
+                        }
+                    }
+                    
+                    this.particleSystems.joy.userData.system.geometry.attributes.position.needsUpdate = true;
+                }
+                
+                // Nostalgia particles - Horizontal drift
+                if (this.particleSystems.nostalgia.visible) {
+                    const positions = this.particleSystems.nostalgia.userData.positions;
+                    const count = positions.length / 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const i3 = i * 3;
+                        
+                        // Drift horizontally
+                        positions[i3] += deltaTime * (0.2 + Math.random() * 0.3);
+                        
+                        // Reset if out of bounds
+                        if (positions[i3] > 50) {
+                            positions[i3] = -50;
+                            
+                            // Randomize y and z
+                            positions[i3 + 1] = Math.random() * 40 - 20;
+                            positions[i3 + 2] = Math.random() * 100 - 50;
+                        }
+                    }
+                    
+                    this.particleSystems.nostalgia.userData.system.geometry.attributes.position.needsUpdate = true;
+                }
+                
+                // Sorrow particles - Downward drifting
+                if (this.particleSystems.sorrow.visible) {
+                    const positions = this.particleSystems.sorrow.userData.positions;
+                    const count = positions.length / 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const i3 = i * 3;
+                        
+                        // Move downward
+                        positions[i3 + 1] -= deltaTime * (0.3 + Math.random() * 0.5);
+                        
+                        // Reset if out of bounds
+                        if (positions[i3 + 1] < -50) {
+                            positions[i3 + 1] = 50;
+                            
+                            // Randomize x and z
+                            const radius = Math.sqrt(Math.random()) * 50;
+                            const theta = Math.random() * Math.PI * 2;
+                            
+                            positions[i3] = radius * Math.cos(theta);
+                            positions[i3 + 2] = radius * Math.sin(theta);
+                        }
+                    }
+                    
+                    this.particleSystems.sorrow.userData.system.geometry.attributes.position.needsUpdate = true;
+                }
+                
+                // Routine particles - Geometric paths
+                if (this.particleSystems.routine.visible) {
+                    const positions = this.particleSystems.routine.userData.positions;
+                    const count = positions.length / 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const i3 = i * 3;
+                        
+                        // Move in geometric patterns
+                        const x = positions[i3];
+                        const y = positions[i3 + 1];
+                        const z = positions[i3 + 2];
+                        
+                        const distance = Math.sqrt(x * x + z * z);
+                        
+                        if (distance < 1) {
+                            // Reset if near center
+                            const radius = 20 + Math.random() * 30;
+                            const angle = Math.random() * Math.PI * 2;
+                            
+                            positions[i3] = Math.cos(angle) * radius;
+                            positions[i3 + 2] = Math.sin(angle) * radius;
+                        } else {
+                            // Move toward center
+                            const angle = Math.atan2(z, x);
+                            
+                            positions[i3] -= Math.cos(angle) * deltaTime * 2;
+                            positions[i3 + 2] -= Math.sin(angle) * deltaTime * 2;
+                        }
+                    }
+                    
+                    this.particleSystems.routine.userData.system.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+            
+            updateStars(deltaTime) {
+                this.stars.forEach(star => {
+                    if (!star.userData.collected) {
+                        // Rotate star
+                        star.rotation.x += deltaTime * 0.5;
+                        star.rotation.y += deltaTime * 0.7;
+                        
+                        // Hover effect
+                        star.position.y = star.userData.originalY + Math.sin(Date.now() * 0.002 + star.userData.pulsePhase) * 0.3;
+                        
+                        // Pulse effect
+                        const pulse = 1 + 0.2 * Math.sin(Date.now() * 0.003 + star.userData.pulsePhase);
+                        star.scale.set(pulse, pulse, pulse);
+                    }
+                });
+            }
+            
+            updateTransmissions(deltaTime) {
+                this.transmissions.forEach(transmission => {
+                    if (!transmission.userData.collected) {
+                        // Rotate transmission
+                        transmission.rotation.y += deltaTime * 0.2;
+                        
+                        // Hover effect
+                        transmission.position.y = transmission.userData.originalY + Math.sin(Date.now() * 0.001 + transmission.userData.pulsePhase) * 0.5;
+                        
+                        // Pulse effect
+                        const pulse = 1 + 0.1 * Math.sin(Date.now() * 0.002 + transmission.userData.pulsePhase);
+                        transmission.scale.set(pulse, pulse, pulse);
+                    }
+                });
+            }
+            
+            checkStarCollection() {
+                this.stars.forEach(star => {
+                    if (!star.userData.collected) {
+                        const distance = this.player.position.distanceTo(star.position);
+                        if (distance < 2) {
+                            this.collectStar(star);
+                        }
+                    }
+                });
+            }
+            
+            checkTransmissionCollection() {
+                this.transmissions.forEach(transmission => {
+                    if (!transmission.userData.collected) {
+                        const distance = this.player.position.distanceTo(transmission.position);
+                        if (distance < 2) {
+                            this.collectTransmission(transmission);
+                        }
+                    }
+                });
+            }
+            
+            collectStar(star) {
+                // Mark as collected
+                star.userData.collected = true;
+                
+                // Animate collection
+                const startTime = Date.now();
+                const duration = 1000;
+                
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    star.position.y += 0.05;
+                    star.material.opacity = 1 - progress;
+                    star.scale.set(1 + progress, 1 + progress, 1 + progress);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        star.visible = false;
+                    }
+                };
+                
+                animate();
+                
+                // Update count
+                this.starsCollected++;
+                this.updateStarCounter();
+                
+                // Increase player glow intensity
+                this.playerGlowIntensity = 0.3 + (this.starsCollected / this.totalStars) * 0.7;
+                this.player.material.emissiveIntensity = this.playerGlowIntensity;
+                this.playerLight.intensity = 0.7 + (this.starsCollected / this.totalStars) * 0.8;
+                
+                // Display message
+                if (this.starsCollected < this.totalStars) {
+                    this.displayMessage(`Star collected! (${this.starsCollected}/${this.totalStars})`);
+                } else {
+                    this.displayMessage(`All stars collected! Move toward the centerpiece to continue your journey.`);
+                }
+            }
+            
+            collectTransmission(transmission) {
+                // Mark as collected
+                transmission.userData.collected = true;
+                
+                // Animate collection
+                const startTime = Date.now();
+                const duration = 1000;
+                
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    transmission.position.y += 0.05;
+                    transmission.material.opacity = 1 - progress;
+                    transmission.scale.set(1 + progress, 1 + progress, 1 + progress);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        transmission.visible = false;
+                    }
+                };
+                
+                animate();
+                
+                // Display transmission modal
+                this.showTransmissionModal(transmission);
+            }
+            
+            showTransmissionModal(transmission) {
+                // Pause player movement
+                this.playerCanMove = false;
+                
+                // Set image and text
+                this.transmissionImage.src = transmission.userData.imagePath;
+                this.transmissionText.textContent = transmission.userData.message;
+                
+                // Show modal
+                this.transmissionModal.style.display = 'block';
+            }
+            
+            updateStarCounter() {
+                this.starsCountElement.textContent = `${this.starsCollected}/${this.totalStars}`;
+            }
+            
+            displayMessage(message) {
+                this.messageDisplay.textContent = message;
+                this.messageDisplay.style.opacity = 1;
+                
+                // Fade out after delay
+                setTimeout(() => {
+                    this.messageDisplay.style.opacity = 0;
+                }, 5000);
+            }
+            
+            pauseGame() {
+                if (!this.gameStarted || this.isPaused) return;
+                
+                console.log('Pausing game...');
+                this.isPaused = true;
+                this.pauseMenu.classList.add('active');
+                
+                // Pause audio
+                if (this.audioContext && this.audioContext.state === 'running') {
+                    this.audioContext.suspend();
+                }
+            }
+            
+            resumeGame() {
+                if (!this.gameStarted || !this.isPaused) return;
+                
+                console.log('Resuming game...');
+                this.isPaused = false;
+                this.pauseMenu.classList.remove('active');
+                
+                // Resume audio
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                // Resume update loop
+                this.update();
+            }
+            
+            restartGame() {
+                if (!this.gameStarted) return;
+                
+                console.log('Restarting game...');
+                
+                // Reset player position
+                this.player.position.set(0, 1, 0);
+                this.verticalVelocity = 0;
+                
+                // Reset player glow
+                this.playerGlowIntensity = 0.3;
+                this.player.material.emissiveIntensity = this.playerGlowIntensity;
+                this.playerLight.intensity = 0.7;
+                
+                // Reset state
+                this.currentStateIndex = 0;
+                this.setEmotionalState(this.emotionalStates[this.currentStateIndex], true);
+                
+                // Create new stars
+                this.createStars();
+                
+                // Resume game
+                this.isPaused = false;
+                this.pauseMenu.classList.remove('active');
+                this.playerCanMove = true;
+                
+                // Resume audio
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                // Display message
+                this.displayMessage('Journey restarted. Collect stars to progress.');
+                
+                // Resume update loop
+                this.update();
+            }
+            
+            exitToMenu() {
+                if (!this.gameStarted) return;
+                
+                console.log('Exiting to menu...');
+                
+                // Stop audio
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                }
+                
+                // Reset game
+                this.gameStarted = false;
+                this.isPaused = false;
+                
+                // Show start screen
+                this.startScreen.style.display = 'flex';
+                
+                // Hide pause menu
+                this.pauseMenu.classList.remove('active');
+                
+                // Remove Three.js canvas
+                this.gameContainer.innerHTML = '';
+            }
+            
+            onResize() {
+                if (!this.gameStarted) return;
+                
+                // Update camera aspect ratio
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                
+                // Update renderer size
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            onKeyDown(event) {
+                if (!this.gameStarted) return;
+                
+                switch (event.key) {
+                    case 'w':
+                    case 'ArrowUp':
+                        this.keys.forward = true;
+                        break;
+                    case 's':
+                    case 'ArrowDown':
+                        this.keys.backward = true;
+                        break;
+                    case 'a':
+                    case 'ArrowLeft':
+                        this.keys.left = true;
+                        break;
+                    case 'd':
+                    case 'ArrowRight':
+                        this.keys.right = true;
+                        break;
+                    case ' ':
+                        this.keys.space = true;
+                        break;
+                    case 'Escape':
+                        if (this.isPaused) {
+                            this.resumeGame();
+                        } else {
+                            this.pauseGame();
+                        }
+                        break;
+                }
+            }
+            
+            onKeyUp(event) {
+                if (!this.gameStarted) return;
+                
+                switch (event.key) {
+                    case 'w':
+                    case 'ArrowUp':
+                        this.keys.forward = false;
+                        break;
+                    case 's':
+                    case 'ArrowDown':
+                        this.keys.backward = false;
+                        break;
+                    case 'a':
+                    case 'ArrowLeft':
+                        this.keys.left = false;
+                        break;
+                    case 'd':
+                    case 'ArrowRight':
+                        this.keys.right = false;
+                        break;
+                    case ' ':
+                        this.keys.space = false;
+                        break;
+                }
+            }
+        }
+        
+        // Initialize the game
+        const game = new EnhancedGame();
+    </script>
+<footer-btn></footer-btn>
+<script>
+    // 定义自定义元素
+    class FooterBtn extends HTMLElement {
+        constructor() {
+            super();
+            // 创建 Shadow DOM
+            const shadow = this.attachShadow({ mode: 'open' });
+            // 创建组件的HTML结构
+            const wrapper = document.createElement('div');
+            wrapper.setAttribute('class', 'wrapper');
+            // 添加一些内容到组件中
+            wrapper.innerHTML = `
+              
+            
+            // 创建样式
+            const style = document.createElement('style');
+            style.textContent = `
+            @keyframes changeWidth {
+                0% {
+                    width: 150px;
+                    background-color: transparent;
+                }
+                100% {
+                    width: 574px;
+                    background-color: #fff;
+                }
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                border: unset;
+            }
+
+            * {
+                line-height: 1.2;
+                text-shadow: initial;
+                font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            }
+
+            a {
+                text-decoration: unset;
+            }
+
+            .page-footer-mobile {
+                z-index: 10000;
+                display: none;
+                position: absolute;
+                right: 16px;
+                bottom: 16px;
+            }
+
+            .page-footer {
+                z-index: 10000;
+                display: flex;
+                padding: 4px 4px 4px 12px;
+                align-items: center;
+                gap: 16px;
+                position: fixed;
+                right: 16px;
+                bottom: 16px;
+                border-radius: 24px;
+                border: 1px solid transparent;
+                background: transparent;
+                transition: 0.3s;
+            }
+
+            .footer-close-btn {
+                display: none;
+                z-index: 10002;
+                cursor: pointer;
+                position: absolute;
+                right: -3px;
+                top: -3px;
+            }
+
+            .footer-bg {
+                overflow: hidden;
+                position: absolute;
+                right: 0px;
+                bottom: 0px;
+                height: 38px;
+                width: 150px;
+                background-color: transparent;
+                border-radius: 24px;
+            }
+
+            .tooltip-box {
+                display: none;
+                transition: 0.3s;
+                z-index: 10001;
+                align-items: center;
+                gap: 1px;
+            }
+
+            .tooltip-desc {
+                color: #858481;
+                /* Label/Primary */
+                font-size: 12px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 16px; /* 133.333% */
+            }
+
+            .footer-button {
+                z-index: 10001;
+                right: 16px;
+                bottom: 16px;
+                user-select: none;
+                cursor: pointer;
+                display: flex;
+                padding: 5px 10px;
+                align-items: center;
+                height: 30px;
+                gap: 2px;
+                transition: 0.3s;
+                border-radius: 14px;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                background: #1a1a19;
+                box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.06), 0px 8px 32px 0px rgba(0, 0, 0, 0.06);
+            }
+
+            .footer-logo {
+                width: 18px;
+                height: 18px;
+            }
+
+            .footer-button:hover .create-title {
+                opacity: 0.8;
+            }
+
+            .footer-button:hover .footer-logo {
+                opacity: 0.8;
+            }
+
+            .page-footer:hover .footer-close-btn {
+                display: block;
+            }
+
+            .page-footer:hover .create-title {
+                display: block;
+            }
+
+            .page-footer:hover .title {
+                display: none;
+            }
+
+            .page-footer:hover .footer-bg {
+                animation: changeWidth 0.3s ease-in-out forwards;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                background: #fff;
+                box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.06), 0px 8px 32px 0px rgba(0, 0, 0, 0.06);
+            }
+
+            .page-footer:hover .tooltip-box {
+                position: absolute;
+                text-wrap-mode: nowrap;
+                display: flex;
+                left: 10px;
+                top: 9px;
+            }
+
+            .tooltip-icon {
+                position: relative;
+                cursor: pointer;
+            }
+
+            .tooltip-dialog {
+                display: none;
+                position: absolute;
+                bottom: 154%;
+                left: -10%;
+                transform: translateX(-50%);
+                padding: 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                line-height: 16px;
+                background-color: #171818;
+                color: #fff;
+                max-width: 280px;
+                width: max-content;
+            }
+
+            .title {
+                color: #fff;
+                font-size: 12px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 16px;
+            }
+
+            .create-title {
+                display: none;
+                color: #fff;
+                font-size: 12px;
+                font-style: normal;
+                font-weight: 400;
+            }
+
+            .footer-dialog {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .dialog-box {
+                display: flex;
+                width: 358px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                background: #fff;
+
+                /* menu/main */
+                box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.02), 0px 4px 32px 0px rgba(0, 0, 0, 0.16);
+                backdrop-filter: blur(40px);
+            }
+
+            .dialog-header {
+                display: flex;
+                padding: 16px 12px 8px 16px;
+                align-items: flex-start;
+                gap: 16px;
+                align-self: stretch;
+            }
+
+            .dialog-header-title {
+                flex: 1;
+                color: #34322d;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 600;
+            }
+
+            .dialog-body {
+                display: flex;
+                padding: 0px 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                align-self: stretch;
+                color: #535350;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 24px;
+            }
+
+            .dialog-footer {
+                display: flex;
+                padding: 16px;
+                align-items: flex-start;
+                gap: 12px;
+                align-self: stretch;
+            }
+
+            .dialog-footer-button-left {
+                display: flex;
+                width: 119px;
+                min-width: 114px;
+                min-height: 48px;
+                padding: 12px 24px;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                border-radius: 12px;
+                background: rgba(55, 53, 47, 0.06);
+                color: #34322d;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 600;
+            }
+
+            .dialog-footer-button-right {
+                display: flex;
+                min-width: 114px;
+                min-height: 48px;
+                padding: 12px 24px;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                flex: 1 0 0;
+                border-radius: 12px;
+                background: #1a1a19;
+                color: #fff;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 600;
+            }
+
+            @media (max-width: 600px) {
+                .page-footer {
+                    display: none;
+                }
+                .page-footer-mobile {
+                    display: block;
+                }
+                .footer-button {
+                    position: fixed
+                }
+            }
+            `;
+            // 将样式和内容添加到Shadow DOM
+            shadow.appendChild(style);
+            shadow.appendChild(wrapper);
+
+            // 在connectedCallback中设置事件监听器
+            this.setupEventListeners(shadow);
+        }
+        onclickEvent(shadow, domStr, fn) {
+            const clickDom = shadow.querySelector(domStr);
+            if (clickDom) {
+                clickDom.onclick = (event) => {
+                    fn(event, clickDom);
+                };
+            }
+        }
+        setupEventListeners(shadow) {
+            const changeDialogStyle = (displayStatus) => {
+                const dialog = shadow.querySelector('.footer-dialog');
+                if (dialog) {
+                    dialog.style.display = displayStatus;
+                }
+            };
+
+            const createSite = () => {
+                window.open('https://manus.im/invitation?from=space', '_blank');
+                changeDialogStyle('none');
+            };
+
+            this.onclickEvent(shadow, '.page-footer-mobile .dialog-footer-button-left', () => {
+                changeDialogStyle('none');
+            });
+
+            this.onclickEvent(shadow, '.page-footer-mobile .dialog-footer-button-right', () => {
+                createSite();
+            });
+
+            this.onclickEvent(shadow, '.page-footer-mobile .dialog-header-icon', () => {
+                changeDialogStyle('none');
+            });
+
+            this.onclickEvent(shadow, '.page-footer-mobile .footer-button', () => {
+                changeDialogStyle('flex');
+            });
+
+            this.onclickEvent(shadow, '.footer-close-btn', () => {
+                localStorage.setItem('embedClosed', 'true');
+                shadow.querySelector('.page-footer').style.display = 'none';
+                shadow.querySelector('.page-footer-mobile').style.display = 'none';
+            });
+
+            this.onclickEvent(shadow, '.page-footer-mobile .footer-dialog', (event, dialog) => {
+                if (event.target === dialog) {
+                    changeDialogStyle('none');
+                }
+            });
+
+            const tooltipIcon = shadow.querySelector('.tooltip-icon');
+            const tooltipDialog = shadow.querySelector('.tooltip-dialog');
+
+            tooltipIcon.addEventListener('mouseenter', function () {
+                tooltipDialog.style.display = 'block';
+            });
+
+            tooltipIcon.addEventListener('mouseleave', function () {
+                tooltipDialog.style.display = 'none';
+            });
+
+            if (localStorage.getItem('embedClosed')) {
+                shadow.querySelector('.page-footer').style.display = 'none';
+                shadow.querySelector('.page-footer-mobile').style.display = 'none';
+            }
+        }
+    }
+    // 注册自定义元素
+    customElements.define('footer-btn', FooterBtn);
+</script>
+<script
+			defer
+			data-domain="manus.space"
+			src="https://plausible.io/js/script.file-downloads.hash.outbound-links.pageview-props.revenue.tagged-events.js"
+		></script>
+		<script>
+			window.plausible =
+				window.plausible ||
+				function () {
+					(window.plausible.q = window.plausible.q || []).push(arguments);
+				};
+		</script></body>
+</html>
