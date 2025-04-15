@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waves of Reflection - Interactive Journey</title>
     <style>
         body {
@@ -302,9 +302,7 @@
     </div>
     
     <!-- Controls Panel -->
-    <div class="controls-message desktop-only">
-      <!-- Your existing desktop controls info -->
-      <div id="controls-panel">
+    <div id="controls-panel">
         <h3>Controls</h3>
         <p><span class="key">W</span> <span class="key">↑</span> Move forward</p>
         <p><span class="key">S</span> <span class="key">↓</span> Move backward</p>
@@ -312,7 +310,6 @@
         <p><span class="key">D</span> <span class="key">→</span> Move right</p>
         <p><span class="key">Space</span> Fly upward</p>
         <p><span class="key">Esc</span> Pause game</p>
-      </div>
     </div>
     
     <!-- Volume Control -->
@@ -783,7 +780,7 @@
                     opacity: 0.9
                 });
                 const voidSphere = new THREE.Mesh(voidGeometry, voidMaterial);
-                voidSphere.position.y = 2.2;
+                voidSphere.position.y = 2;
                 sorrowCenterpiece.add(voidSphere);
                 
                 // Create fragments
@@ -793,7 +790,7 @@
                         color: this.stateColors.sorrow,
                         emissive: this.stateColors.sorrow,
                         emissiveIntensity: 0.3,
-                        wireframe: false
+                        wireframe: true
                     });
                     
                     const fragment = new THREE.Mesh(fragmentGeometry, fragmentMaterial);
@@ -1373,325 +1370,6 @@
                 
                 // Apply vertical velocity
                 this.player.position.y += this.verticalVelocity;
-                
-                // Add this code outside your updatePlayerMovement method, near your other initialization code
-
-                initGame() {
-                    // Your existing initialization code...
-                    
-                    // Initialize mobile controls if on mobile device
-                    this.initializeMobileControls();
-                }
-
-                initializeMobileControls() {
-                    // Check if we're on a mobile device
-                    if (!this.isMobileDevice()) {
-                        console.log("Desktop detected, skipping mobile controls");
-                        return;
-                    }
-                    
-                    console.log("Mobile device detected, initializing mobile controls");
-                    
-                    // Create the mobile UI elements
-                    const mobileControls = this.createMobileControls();
-                    
-                    // Set up the mobile controls if they were created successfully
-                    if (mobileControls) {
-                        this.setupMobileJoystick(mobileControls);
-                        
-                        // Add mobile-specific styles
-                        const mobileStyle = document.createElement('style');
-                        mobileStyle.textContent = `
-                            @media (max-width: 800px) {
-                                .desktop-only {
-                                    display: none !important;
-                                }
-                                
-                                .mobile-instruction {
-                                    position: fixed;
-                                    top: 10px;
-                                    left: 0;
-                                    width: 100%;
-                                    text-align: center;
-                                    color: white;
-                                    background: rgba(0, 0, 0, 0.5);
-                                    padding: 10px;
-                                    font-size: 14px;
-                                    z-index: 1000;
-                                }
-                            }
-                        `;
-                        document.head.appendChild(mobileStyle);
-                        
-                        // Add mobile instructions
-                        const mobileInstruction = document.createElement('div');
-                        mobileInstruction.className = 'mobile-instruction';
-                        mobileInstruction.innerHTML = 'Use the left joystick to move<br>Tap the right button to fly';
-                        mobileInstruction.style.display = 'block';
-                        document.body.appendChild(mobileInstruction);
-                        
-                        // Hide instruction after a few seconds
-                        setTimeout(() => {
-                            mobileInstruction.style.opacity = '0';
-                            mobileInstruction.style.transition = 'opacity 1s';
-                            setTimeout(() => {
-                                mobileInstruction.style.display = 'none';
-                            }, 1000);
-                        }, 5000);
-                    }
-                }
-
-                isMobileDevice() {
-                    // More specific mobile detection that won't trigger on desktop
-                    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-                    const isTouchOnly = window.matchMedia("(pointer: coarse)").matches &&
-                                        !window.matchMedia("(pointer: fine)").matches;
-                    
-                    // Only return true for actual mobile devices
-                    return mobileRegex.test(navigator.userAgent) && (isTouchOnly || window.innerWidth < 768);
-                }
-
-                createMobileControls() {
-                    // Create container for mobile controls
-                    const mobileControlsContainer = document.createElement('div');
-                    mobileControlsContainer.id = 'mobile-controls';
-                    mobileControlsContainer.style.position = 'fixed';
-                    mobileControlsContainer.style.bottom = '20px';
-                    mobileControlsContainer.style.left = '0';
-                    mobileControlsContainer.style.width = '100%';
-                    mobileControlsContainer.style.display = 'flex';
-                    mobileControlsContainer.style.justifyContent = 'space-between';
-                    mobileControlsContainer.style.pointerEvents = 'none';
-                    mobileControlsContainer.style.zIndex = '1000';
-                    document.body.appendChild(mobileControlsContainer);
-
-                    // Create joystick container
-                    const joystickContainer = document.createElement('div');
-                    joystickContainer.id = 'joystick-container';
-                    joystickContainer.style.width = '120px';
-                    joystickContainer.style.height = '120px';
-                    joystickContainer.style.borderRadius = '50%';
-                    joystickContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                    joystickContainer.style.margin = '0 0 20px 20px';
-                    joystickContainer.style.position = 'relative';
-                    joystickContainer.style.pointerEvents = 'auto';
-                    mobileControlsContainer.appendChild(joystickContainer);
-
-                    // Create joystick knob
-                    const joystick = document.createElement('div');
-                    joystick.id = 'joystick';
-                    joystick.style.width = '50px';
-                    joystick.style.height = '50px';
-                    joystick.style.borderRadius = '50%';
-                    joystick.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                    joystick.style.position = 'absolute';
-                    joystick.style.top = '50%';
-                    joystick.style.left = '50%';
-                    joystick.style.transform = 'translate(-50%, -50%)';
-                    joystickContainer.appendChild(joystick);
-
-                    // Create fly button
-                    const flyButton = document.createElement('div');
-                    flyButton.id = 'fly-button';
-                    flyButton.style.width = '80px';
-                    flyButton.style.height = '80px';
-                    flyButton.style.borderRadius = '50%';
-                    flyButton.style.backgroundColor = 'rgba(157, 78, 221, 0.6)';
-                    flyButton.style.margin = '0 20px 20px 0';
-                    flyButton.style.display = 'flex';
-                    flyButton.style.justifyContent = 'center';
-                    flyButton.style.alignItems = 'center';
-                    flyButton.style.color = 'white';
-                    flyButton.style.fontWeight = 'bold';
-                    flyButton.style.pointerEvents = 'auto';
-                    flyButton.textContent = 'FLY';
-                    mobileControlsContainer.appendChild(flyButton);
-
-                    // Hide desktop controls only on mobile
-                    const desktopControls = document.querySelector('.controls-message');
-                    if (desktopControls) {
-                        desktopControls.style.display = 'none';
-                    }
-
-                    return {
-                        joystickContainer,
-                        joystick,
-                        flyButton
-                    };
-                }
-
-                setupMobileJoystick(mobileControls) {
-                    const { joystickContainer, joystick, flyButton } = mobileControls;
-                    let joystickActive = false;
-                    let flyActive = false;
-
-                    // Joystick movement values
-                    let joystickX = 0;
-                    let joystickY = 0;
-
-                    // Handle joystick touch events
-                    joystickContainer.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        joystickActive = true;
-                        updateJoystickPosition(e);
-                    });
-
-                    document.addEventListener('touchmove', (e) => {
-                        if (joystickActive) {
-                            e.preventDefault();
-                            updateJoystickPosition(e);
-                        }
-                    });
-
-                    document.addEventListener('touchend', (e) => {
-                        if (joystickActive) {
-                            joystickActive = false;
-                            resetJoystick();
-                        }
-                        
-                        if (e.target === flyButton) {
-                            flyActive = false;
-                            this.keys.space = false;
-                        }
-                    });
-
-                    // Update joystick position based on touch
-                    const updateJoystickPosition = (e) => {
-                        const touch = e.touches[0];
-                        const rect = joystickContainer.getBoundingClientRect();
-                        const centerX = rect.left + rect.width / 2;
-                        const centerY = rect.top + rect.height / 2;
-                        
-                        // Calculate the distance from the center
-                        let deltaX = touch.clientX - centerX;
-                        let deltaY = touch.clientY - centerY;
-                        
-                        // Calculate the distance from the center
-                        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                        const maxDistance = rect.width / 2;
-                        
-                        // If the touch is outside the joystick container, limit it to the edge
-                        if (distance > maxDistance) {
-                            const ratio = maxDistance / distance;
-                            deltaX *= ratio;
-                            deltaY *= ratio;
-                        }
-                        
-                        // Move the joystick
-                        joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                        
-                        // Normalize the values between -1 and 1 for controls
-                        joystickX = deltaX / maxDistance;
-                        joystickY = deltaY / maxDistance;
-                        
-                        // Update the game controls - connect to this.keys instead of separate controls object
-                        this.keys.forward = -joystickY > 0.3;
-                        this.keys.backward = -joystickY < -0.3;
-                        this.keys.left = joystickX < -0.3;
-                        this.keys.right = joystickX > 0.3;
-                    };
-
-                    // Reset joystick position
-                    const resetJoystick = () => {
-                        joystick.style.transform = 'translate(-50%, -50%)';
-                        joystickX = 0;
-                        joystickY = 0;
-                        
-                        // Reset the game controls
-                        this.keys.forward = false;
-                        this.keys.backward = false;
-                        this.keys.left = false;
-                        this.keys.right = false;
-                    };
-
-                    // Handle fly button
-                    flyButton.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        flyActive = true;
-                        this.keys.space = true;
-                    });
-
-                    flyButton.addEventListener('touchend', (e) => {
-                        e.preventDefault();
-                        flyActive = false;
-                        this.keys.space = false;
-                    });
-                }
-                  
-                  // Only continue with setup if mobile controls were created
-                  if (mobileControls) {
-                    setupMobileJoystick(mobileControls, controls);
-                    
-                    // Add mobile-specific styles
-                    const mobileStyle = document.createElement('style');
-                    mobileStyle.textContent = `
-                      @media (max-width: 800px) {
-                        .desktop-only {
-                          display: none !important;
-                        }
-                        
-                        .mobile-instruction {
-                          position: fixed;
-                          top: 10px;
-                          left: 0;
-                          width: 100%;
-                          text-align: center;
-                          color: white;
-                          background: rgba(0, 0, 0, 0.5);
-                          padding: 10px;
-                          font-size: 14px;
-                          z-index: 1000;
-                        }
-                      }
-                    `;
-                    document.head.appendChild(mobileStyle);
-                    
-                    // Add mobile instructions
-                    const mobileInstruction = document.createElement('div');
-                    mobileInstruction.className = 'mobile-instruction';
-                    mobileInstruction.innerHTML = 'Use the left joystick to move<br>Tap the right button to fly';
-                    mobileInstruction.style.display = 'block';
-                    document.body.appendChild(mobileInstruction);
-                    
-                    // Hide instruction after a few seconds
-                    setTimeout(() => {
-                      mobileInstruction.style.opacity = '0';
-                      mobileInstruction.style.transition = 'opacity 1s';
-                      setTimeout(() => {
-                        mobileInstruction.style.display = 'none';
-                      }, 1000);
-                    }, 5000);
-                    
-                    return true;
-                  }
-                  
-                  return false;
-                }
-
-                // Make sure we don't interfere with desktop game loading
-                document.addEventListener('DOMContentLoaded', function() {
-                  // Delay mobile controls initialization to ensure game loads first
-                  setTimeout(() => {
-                    // This needs to reference your actual game controls object
-                    // If you can't easily access it here, consider calling initMobileControls
-                    // from within your game's initialization code instead
-                    
-                    // Example:
-                    // if (typeof playerControls !== 'undefined') {
-                    //   initMobileControls(playerControls);
-                    // }
-                    
-                    console.log("Mobile controls ready to initialize");
-                  }, 1000);
-                });
-
-                // This is just a safety check to make sure we don't break the game
-                if (typeof window !== 'undefined') {
-                  window.mobileControlsAPI = {
-                    isMobileDevice,
-                    initMobileControls
-                  };
-                }
                 
                 // Prevent going below ground
                 if (this.player.position.y < 1) {
