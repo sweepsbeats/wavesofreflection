@@ -6,6 +6,7 @@
  * - Dedicated fly button
  * - Mobile device detection
  * - Responsive UI adjustments
+ * - Wider field of view for mobile screens
  */
 
 class MobileControls {
@@ -27,6 +28,10 @@ class MobileControls {
         // Fly button state
         this.flyButtonActive = false;
         this.flyButtonTouchId = null;
+        
+        // Field of view settings
+        this.defaultFOV = 75;
+        this.mobileFOV = 90; // Wider FOV for mobile
         
         // Initialize if on mobile
         if (this.isMobile) {
@@ -56,6 +61,9 @@ class MobileControls {
         
         // Adjust UI for mobile
         this.adjustUIForMobile();
+        
+        // Adjust field of view for mobile
+        this.adjustFieldOfView();
     }
     
     /**
@@ -304,6 +312,31 @@ class MobileControls {
     }
     
     /**
+     * Adjust field of view for mobile devices
+     */
+    adjustFieldOfView() {
+        if (this.game && this.game.camera) {
+            // Store original FOV for reference
+            if (!this.game.camera.userData) {
+                this.game.camera.userData = {};
+            }
+            
+            if (!this.game.camera.userData.originalFOV) {
+                this.game.camera.userData.originalFOV = this.game.camera.fov;
+            }
+            
+            // Set wider FOV for mobile
+            this.game.camera.fov = this.mobileFOV;
+            this.game.camera.updateProjectionMatrix();
+            
+            console.log(`Adjusted field of view for mobile: ${this.mobileFOV} degrees`);
+        } else {
+            // If camera isn't available yet, try again after a delay
+            setTimeout(() => this.adjustFieldOfView(), 500);
+        }
+    }
+    
+    /**
      * Adjust UI elements for mobile
      */
     adjustUIForMobile() {
@@ -367,5 +400,8 @@ class MobileControls {
                 originalDisplayMessage.call(this.game, message);
             }.bind(this);
         }
+        
+        // Re-adjust field of view if needed
+        this.adjustFieldOfView();
     }
 }
