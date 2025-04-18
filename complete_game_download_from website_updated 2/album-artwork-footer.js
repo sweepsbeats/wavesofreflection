@@ -149,7 +149,7 @@ class AlbumArtworkFooter {
             this.footerElement.style.bottom = '10px';
         } else {
             // Standard position on desktop
-            this.footerElement.style.bottom = '100px';
+            this.footerElement.style.bottom = '10px';
         }
     }
 }
