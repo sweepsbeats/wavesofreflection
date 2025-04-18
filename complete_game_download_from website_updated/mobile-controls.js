@@ -76,9 +76,9 @@ class MobileControls {
         this.flyButton.style.cssText = `
             position: fixed;
             bottom: 60px;
-            left: 40px;
-            width: 120px;
-            height: 120px;
+            left: 30px;
+            width: 100px;
+            height: 100px;
             background-color: rgba(255, 215, 0, 0.2);
             border: 2px solid rgba(255, 215, 0, 0.5);
             border-radius: 50%;
@@ -104,9 +104,9 @@ class MobileControls {
         this.joystickContainer.style.cssText = `
             position: fixed;
             bottom: 60px;
-            right: 40px;
-            width: 120px;
-            height: 120px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
             background-color: rgba(255, 215, 0, 0.2);
             border: 2px solid rgba(255, 215, 0, 0.5);
             border-radius: 50%;
