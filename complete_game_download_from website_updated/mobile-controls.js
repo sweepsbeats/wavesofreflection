@@ -20,15 +20,13 @@ class MobileControls {
         
         // Joystick state
         this.joystickActive = false;
-        this.joystickPosition = { x: 0, y: 0 };
+        this.joystickTouchId = null;
         this.joystickStartPosition = { x: 0, y: 0 };
         this.joystickCurrentPosition = { x: 0, y: 0 };
         
         // Fly button state
         this.flyButtonActive = false;
-        
-        // Track active touches to prevent joystick reset when releasing fly button
-        this.activeTouches = {};
+        this.flyButtonTouchId = null;
         
         // Initialize if on mobile
         if (this.isMobile) {
@@ -64,13 +62,41 @@ class MobileControls {
      * Create mobile control elements
      */
     createMobileControls() {
-        // Create joystick container - now on the left side
+        // Create fly button - now on the left side
+        this.flyButton = document.createElement('div');
+        this.flyButton.id = 'fly-button';
+        this.flyButton.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 80px;
+            width: 120px;
+            height: 120px;
+            background-color: rgba(255, 215, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            z-index: 300;
+        `;
+        
+        // Add fly icon to button
+        this.flyButton.innerHTML = `
+            <div style="
+                font-size: 24px;
+                color: rgba(255, 215, 0, 0.8);
+                transform: translateY(-5px);
+            ">↑</div>
+        `;
+        
+        // Create joystick container - now on the right side
         this.joystickContainer = document.createElement('div');
         this.joystickContainer.id = 'joystick-container';
         this.joystickContainer.style.cssText = `
             position: fixed;
             bottom: 80px;
-            left: 80px;
+            right: 80px;
             width: 120px;
             height: 120px;
             background-color: rgba(255, 215, 0, 0.2);
@@ -95,34 +121,6 @@ class MobileControls {
             touch-action: none;
         `;
         
-        // Create fly button - now on the right side
-        this.flyButton = document.createElement('div');
-        this.flyButton.id = 'fly-button';
-        this.flyButton.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            right: 80px;
-            width: 100px;
-            height: 100px;
-            background-color: rgba(255, 215, 0, 0.2);
-            border: 2px solid rgba(255, 215, 0, 0.5);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            touch-action: none;
-            z-index: 300;
-        `;
-        
-        // Add fly icon to button
-        this.flyButton.innerHTML = `
-            <div style="
-                font-size: 24px;
-                color: rgba(255, 215, 0, 0.8);
-                transform: translateY(-5px);
-            ">↑</div>
-        `;
-        
         // Add elements to DOM
         this.joystickContainer.appendChild(this.joystickInner);
         document.body.appendChild(this.joystickContainer);
@@ -133,24 +131,11 @@ class MobileControls {
      * Add event listeners for touch controls
      */
     addEventListeners() {
-        // Joystick touch events
-        this.joystickContainer.addEventListener('touchstart', this.onJoystickStart.bind(this));
-        document.addEventListener('touchmove', this.onTouchMove.bind(this));
-        document.addEventListener('touchend', this.onTouchEnd.bind(this));
-        document.addEventListener('touchcancel', this.onTouchEnd.bind(this));
-        
-        // Fly button touch events
-        this.flyButton.addEventListener('touchstart', this.onFlyButtonStart.bind(this));
-        this.flyButton.addEventListener('touchend', this.onFlyButtonEnd.bind(this));
-        
-        // Prevent default touch behavior to avoid scrolling
-        document.addEventListener('touchmove', function(e) {
-            if (e.target.id === 'joystick-container' || 
-                e.target.id === 'joystick-inner' || 
-                e.target.id === 'fly-button') {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // Touch event listeners for the entire document
+        document.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+        document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+        document.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+        document.addEventListener('touchcancel', this.onTouchEnd.bind(this), { passive: false });
         
         // Handle orientation change
         window.addEventListener('orientationchange', this.adjustUIForMobile.bind(this));
@@ -158,145 +143,114 @@ class MobileControls {
     }
     
     /**
-     * Adjust UI elements for mobile
+     * Handle touch start for all elements
      */
-    adjustUIForMobile() {
-        // Hide desktop controls info
-        const controlsInfo = document.getElementById('controls-info');
-        if (controlsInfo) {
-            controlsInfo.style.display = 'none';
-        }
-        
-        // Hide desktop controls panel
-        const controlsPanel = document.getElementById('controls-panel');
-        if (controlsPanel) {
-            controlsPanel.style.display = 'none';
-        }
-        
-        // Adjust volume control position - now at bottom right
-        const volumeControl = document.getElementById('volume-control');
-        if (volumeControl) {
-            volumeControl.style.bottom = '20px';
-            volumeControl.style.right = '20px';
-        }
-        
-        // Add mobile instructions
-        const mobileInstructions = document.createElement('div');
-        mobileInstructions.id = 'mobile-instructions';
-        mobileInstructions.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            text-align: center;
-            pointer-events: none;
-            opacity: 1;
-            transition: opacity 3s ease;
-            z-index: 150;
-        `;
-        mobileInstructions.innerHTML = '<p>Use joystick to move | Tap right button to fly up</p>';
-        
-        // Add to DOM if not already present
-        if (!document.getElementById('mobile-instructions')) {
-            document.body.appendChild(mobileInstructions);
+    onTouchStart(event) {
+        // Prevent default behavior for control elements
+        for (let i = 0; i < event.touches.length; i++) {
+            const touch = event.touches[i];
+            const target = touch.target;
             
-            // Hide instructions after delay
-            setTimeout(() => {
-                mobileInstructions.style.opacity = 0;
-            }, 10000);
-        }
-        
-        // Override desktop welcome message for mobile
-        if (this.game && this.game.displayMessage) {
-            const originalDisplayMessage = this.game.displayMessage;
-            this.game.displayMessage = function(message) {
-                // Replace desktop control instructions with mobile-friendly message
-                if (message.includes('Use SPACE to fly upward')) {
-                    message = 'Collect stars to progress through the journey.';
-                }
-                originalDisplayMessage.call(this.game, message);
-            }.bind(this);
-        }
-    }
-    
-    /**
-     * Handle joystick touch start
-     */
-    onJoystickStart(event) {
-        if (event.touches.length > 0) {
-            const touch = event.touches[0];
-            this.joystickActive = true;
+            if (this.isControlElement(target)) {
+                event.preventDefault();
+            }
             
-            // Store touch identifier
-            this.activeTouches[touch.identifier] = 'joystick';
-            
-            // Get touch position
-            const rect = this.joystickContainer.getBoundingClientRect();
-            
-            // Calculate center of joystick container
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            // Store start position
-            this.joystickStartPosition = { x: centerX, y: centerY };
-            this.joystickCurrentPosition = { x: touch.clientX, y: touch.clientY };
-            
-            // Update joystick position
-            this.updateJoystickPosition();
-        }
-    }
-    
-    /**
-     * Handle touch move for all touches
-     */
-    onTouchMove(event) {
-        // Handle joystick movement
-        for (let i = 0; i < event.changedTouches.length; i++) {
-            const touch = event.changedTouches[i];
-            
-            // Check if this touch is controlling the joystick
-            if (this.activeTouches[touch.identifier] === 'joystick' && this.joystickActive) {
+            // Check if touch is on joystick
+            if (this.joystickContainer.contains(target) && !this.joystickActive) {
+                this.joystickActive = true;
+                this.joystickTouchId = touch.identifier;
+                
+                // Get joystick position
+                const rect = this.joystickContainer.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                this.joystickStartPosition = { x: centerX, y: centerY };
                 this.joystickCurrentPosition = { x: touch.clientX, y: touch.clientY };
+                
                 this.updateJoystickPosition();
+            }
+            
+            // Check if touch is on fly button
+            if (this.flyButton.contains(target) && !this.flyButtonActive) {
+                this.flyButtonActive = true;
+                this.flyButtonTouchId = touch.identifier;
+                this.game.keys.space = true;
+                
+                // Visual feedback
+                this.flyButton.style.backgroundColor = 'rgba(255, 215, 0, 0.5)';
             }
         }
     }
     
     /**
-     * Handle touch end for all touches
+     * Handle touch move for all elements
+     */
+    onTouchMove(event) {
+        // Prevent default behavior for control elements
+        for (let i = 0; i < event.touches.length; i++) {
+            const touch = event.touches[i];
+            if (this.isControlElement(touch.target)) {
+                event.preventDefault();
+            }
+        }
+        
+        // Update joystick position if active
+        if (this.joystickActive) {
+            for (let i = 0; i < event.touches.length; i++) {
+                const touch = event.touches[i];
+                if (touch.identifier === this.joystickTouchId) {
+                    this.joystickCurrentPosition = { x: touch.clientX, y: touch.clientY };
+                    this.updateJoystickPosition();
+                    break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Handle touch end for all elements
      */
     onTouchEnd(event) {
         for (let i = 0; i < event.changedTouches.length; i++) {
             const touch = event.changedTouches[i];
             
-            // Check if this is the joystick touch
-            if (this.activeTouches[touch.identifier] === 'joystick') {
+            // Check if joystick touch ended
+            if (touch.identifier === this.joystickTouchId) {
                 this.joystickActive = false;
+                this.joystickTouchId = null;
                 
                 // Reset joystick position
                 this.joystickInner.style.transform = 'translate(-50%, -50%)';
                 
-                // Reset game movement
+                // Reset movement keys
                 this.game.keys.forward = false;
                 this.game.keys.backward = false;
                 this.game.keys.left = false;
                 this.game.keys.right = false;
-                
-                // Remove from active touches
-                delete this.activeTouches[touch.identifier];
             }
-            // Check if this is the fly button touch
-            else if (this.activeTouches[touch.identifier] === 'flyButton') {
-                this.onFlyButtonEnd();
+            
+            // Check if fly button touch ended
+            if (touch.identifier === this.flyButtonTouchId) {
+                this.flyButtonActive = false;
+                this.flyButtonTouchId = null;
+                this.game.keys.space = false;
                 
-                // Remove from active touches
-                delete this.activeTouches[touch.identifier];
+                // Reset visual feedback
+                this.flyButton.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
             }
         }
+    }
+    
+    /**
+     * Check if an element is part of the controls
+     */
+    isControlElement(element) {
+        return this.joystickContainer.contains(element) || 
+               this.flyButton.contains(element) ||
+               element.id === 'joystick-container' || 
+               element.id === 'joystick-inner' || 
+               element.id === 'fly-button';
     }
     
     /**
@@ -350,31 +304,68 @@ class MobileControls {
     }
     
     /**
-     * Handle fly button touch start
+     * Adjust UI elements for mobile
      */
-    onFlyButtonStart(event) {
-        if (event.touches.length > 0) {
-            const touch = event.touches[0];
-            
-            // Store touch identifier
-            this.activeTouches[touch.identifier] = 'flyButton';
-            
-            this.flyButtonActive = true;
-            this.game.keys.space = true;
-            
-            // Visual feedback
-            this.flyButton.style.backgroundColor = 'rgba(255, 215, 0, 0.5)';
+    adjustUIForMobile() {
+        // Hide desktop controls info
+        const controlsInfo = document.getElementById('controls-info');
+        if (controlsInfo) {
+            controlsInfo.style.display = 'none';
         }
-    }
-    
-    /**
-     * Handle fly button touch end
-     */
-    onFlyButtonEnd() {
-        this.flyButtonActive = false;
-        this.game.keys.space = false;
         
-        // Reset visual feedback
-        this.flyButton.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
+        // Hide desktop controls panel
+        const controlsPanel = document.getElementById('controls-panel');
+        if (controlsPanel) {
+            controlsPanel.style.display = 'none';
+        }
+        
+        // Adjust volume control position - at bottom right
+        const volumeControl = document.getElementById('volume-control');
+        if (volumeControl) {
+            volumeControl.style.bottom = '20px';
+            volumeControl.style.right = '20px';
+        }
+        
+        // Add mobile instructions
+        const mobileInstructions = document.createElement('div');
+        mobileInstructions.id = 'mobile-instructions';
+        mobileInstructions.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 3s ease;
+            z-index: 150;
+        `;
+        mobileInstructions.innerHTML = '<p>Use right joystick to move | Tap left button to fly up</p>';
+        
+        // Add to DOM if not already present
+        if (!document.getElementById('mobile-instructions')) {
+            document.body.appendChild(mobileInstructions);
+            
+            // Hide instructions after delay
+            setTimeout(() => {
+                mobileInstructions.style.opacity = 0;
+            }, 10000);
+        }
+        
+        // Override desktop welcome message for mobile
+        if (this.game && this.game.displayMessage) {
+            const originalDisplayMessage = this.game.displayMessage;
+            this.game.displayMessage = function(message) {
+                // Replace desktop control instructions with mobile-friendly message
+                if (message.includes('Use SPACE to fly upward')) {
+                    message = 'Collect stars to progress through the journey.';
+                }
+                originalDisplayMessage.call(this.game, message);
+            }.bind(this);
+        }
     }
 }
