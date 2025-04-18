@@ -146,7 +146,7 @@ class AlbumArtworkFooter {
     adjustPosition() {
         if (this.isMobile) {
             // Position higher on mobile to avoid controls
-            this.footerElement.style.bottom = '160px';
+            this.footerElement.style.bottom = '10px';
         } else {
             // Standard position on desktop
             this.footerElement.style.bottom = '10px';
