@@ -75,8 +75,8 @@ class MobileControls {
         this.flyButton.id = 'fly-button';
         this.flyButton.style.cssText = `
             position: fixed;
-            bottom: 40px;
-            left: 40px;
+            bottom: 55px;
+            left: 55px;
             width: 120px;
             height: 120px;
             background-color: rgba(255, 215, 0, 0.2);
@@ -103,8 +103,8 @@ class MobileControls {
         this.joystickContainer.id = 'joystick-container';
         this.joystickContainer.style.cssText = `
             position: fixed;
-            bottom: 40px;
-            right: 40px;
+            bottom: 55px;
+            right: 55px;
             width: 120px;
             height: 120px;
             background-color: rgba(255, 215, 0, 0.2);
@@ -122,8 +122,8 @@ class MobileControls {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             background-color: rgba(255, 215, 0, 0.5);
             border-radius: 50%;
             touch-action: none;
